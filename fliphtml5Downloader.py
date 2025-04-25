@@ -15,6 +15,8 @@ import requests
 import json
 import re
 import os
+from PIL import Image
+import io
 
 """
 First we need to see the url structure, the url structure is https://online.fliphtml5.com/*****/**** where the aestricks are different for every book, so we need to get this as input from you, so that you can download your favorite book.
@@ -75,6 +77,14 @@ for page in range(len(fliphtml5_pages)):
         print('Downloading Page ' + str(page + 1) + ' / ' + str(len(fliphtml5_pages)) + ' .....')
         with open(file_path, "wb") as f:
             f.write(page_image.content)
+
+         # Verification step
+        try:
+            with Image.open(file_path) as img:
+                img.verify()
+            print(f'Page {page + 1} saved and verified as a valid webp image.')
+        except Exception as e:
+            print(f'Warning: Page {page + 1} could not be verified as a valid webp image: {e}')
     else:
         print('Send an email to developer with your book name or comment on the youtube video with the book name.')
         break
@@ -83,9 +93,6 @@ if page_url != '' and page_images != []:
     print("Downloading Complete. Don't Close, hold-on. We are yet to make PDF.")
 
     # Process webp files
-    from PIL import Image
-    import io
-
     image_objs = []
     for img_bytes in page_images:
         image = Image.open(io.BytesIO(img_bytes)).convert("RGB")  # Convert webp to RGB
