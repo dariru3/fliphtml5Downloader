@@ -74,11 +74,11 @@ for page in range(len(fliphtml5_pages)):
         file_path = f"{folder_name}/{page + 1}.webp" # Replace .jpg"
         page_image = requests.get(page_url)
         page_images.append(page_image.content)
-        print('Downloading Page ' + str(page + 1) + ' / ' + str(len(fliphtml5_pages)) + ' .....')
+        print(f'Downloading Page {str(page + 1)} / {str(len(fliphtml5_pages))}')
         with open(file_path, "wb") as f:
             f.write(page_image.content)
 
-         # Verification step
+        # Verification step
         try:
             with Image.open(file_path) as img:
                 img.verify()
@@ -102,5 +102,5 @@ if page_url != '' and page_images != []:
     pdf_path = f"{folder_name}.pdf"
     image_objs[0].save(pdf_path, save_all=True, append_images=image_objs[1:])
 
-    print('The pdf named ' + folder_name + '.pdf has been saved in your working directory.')
+    print(f'The pdf named {folder_name}.pdf has been saved in your working directory.')
     print('Thank you for using this script originally written by Engr Moaz Dev.')
