@@ -42,7 +42,7 @@ config_dict = json.loads(config_file.text.split('= ')[1][:-1])      #changed fro
 fliphtml5_pages = config_dict['fliphtml5_pages']
 
 #Let's prepare where to save our images, creates folder as per title of book
-folder_name = "web_journal" # config_dict['meta']['title']
+folder_name = config_dict['meta']['title']
 # Replace invalid characters
 folder_name = re.sub(r'[<>:"/\\|?*]', '_', folder_name) #suggested by a person named astreopoli
 
