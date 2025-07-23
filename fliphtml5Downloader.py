@@ -52,12 +52,17 @@ os.makedirs(folder_name, exist_ok=True)
 """
 Below code is being added to see which url pattern is being followed.
 """
+import time
+
 def url_patterns(book_name, page):
-    #Fliphtml5 uses different options of url for different books. Feel free to add more options in the dictionary below.
+    # Fliphtml5 uses different options of url for different books. Feel free to add more options in the dictionary below.
+    page_path = fliphtml5_pages[page]['n'][0].lstrip('/')  # Remove leading slash
+    # Use current timestamp for cache busting
+    timestamp = str(int(time.time()))
     url_options = {
-        0: f'https://online.fliphtml5.com/{book_name}/files/large/{fliphtml5_pages[page]['n'][0]}',
-        1: f'https://online.fliphtml5.com/{book_name}/files/page/{page+1}.jpg',
-        2: f'https://online.fliphtml5.com/{book_name}{fliphtml5_pages[page]['n'][0][1:]}',
+        0: f'https://online.fliphtml5.com/{book_name}/files/large/{page_path}?{timestamp}&{timestamp}',
+        1: f'https://online.fliphtml5.com/{book_name}/files/page/{page + 1}.jpg',
+        2: f'https://online.fliphtml5.com/{book_name}/{page_path}',
         3: f'https://online.fliphtml5.com/{book_name}/#p{page + 1}',
     }
     for key in url_options.keys():
@@ -66,22 +71,22 @@ def url_patterns(book_name, page):
             return url_options[key]
     return ''
 
-page_images=[]
+
+page_images = []
+
 for page in range(len(fliphtml5_pages)):
-    print(fliphtml5_pages[page]['n'][0][1:])
     page_url = url_patterns(book_name, page)
     if page_url != '':
-        file_path = f"{folder_name}/{page + 1}.webp" # Replace .jpg"
+        file_path = f"{folder_name}/{page + 1}.webp"
         page_image = requests.get(page_url)
-        page_images.append(page_image.content)
-        print(f'Downloading Page {str(page + 1)} / {str(len(fliphtml5_pages))}')
-        with open(file_path, "wb") as f:
-            f.write(page_image.content)
-
-        # Verification step
         try:
-            with Image.open(file_path) as img:
-                img.verify()
+            img = Image.open(io.BytesIO(page_image.content))
+            img.verify()  # Verify image integrity
+            # Save and append only if image is valid
+            with open(file_path, "wb") as f:
+                f.write(page_image.content)
+            print(f'Downloading Page {page + 1} / {len(fliphtml5_pages)}')
+            page_images.append(page_image.content)
             print(f'Page {page + 1} saved and verified as a valid webp image.')
         except Exception as e:
             print(f'Warning: Page {page + 1} could not be verified as a valid webp image: {e}')
@@ -89,7 +94,7 @@ for page in range(len(fliphtml5_pages)):
         print('Send an email to developer with your book name or comment on the youtube video with the book name.')
         break
 
-if page_url != '' and page_images != []:
+if page_images:
     print("Downloading Complete. Don't Close, hold-on. We are yet to make PDF.")
 
     # Process webp files
@@ -98,9 +103,10 @@ if page_url != '' and page_images != []:
         image = Image.open(io.BytesIO(img_bytes)).convert("RGB")  # Convert webp to RGB
         image_objs.append(image)
 
-    #Let's make pdf now.
+    # Make pdf now.
     pdf_path = f"{folder_name}.pdf"
     image_objs[0].save(pdf_path, save_all=True, append_images=image_objs[1:])
 
     print(f'The pdf named {folder_name}.pdf has been saved in your working directory.')
+
     print('Thank you for using this script originally written by Engr Moaz Dev.')
